@@ -1,0 +1,15 @@
+# LaTeX auxiliares
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Book PDF (no subir el libro por copyright)
+book/
+
+# MATLAB temporales
+*.asv
+*.m~

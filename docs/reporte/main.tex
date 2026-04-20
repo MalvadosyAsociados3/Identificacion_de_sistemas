@@ -1,0 +1,179 @@
+\documentclass[12pt,a4paper]{article}
+
+% Paquetes
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{circuitikz}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% Configuracion de listings para MATLAB
+\lstdefinestyle{matlab}{
+    language=Matlab,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    frame=single,
+    breaklines=true,
+    captionpos=b
+}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Identificaci\'on de Sistemas}
+\fancyhead[R]{Circuito RC de Primer Orden}
+\fancyfoot[C]{\thepage}
+
+% Datos
+\title{
+    \textbf{Identificaci\'on de Sistemas} \\[0.5cm]
+    \Large Circuito RC de Primer Orden: Simulaci\'on y Realizaci\'on F\'isica \\[1cm]
+    \large Basado en: \textit{Engineering Circuit Analysis, 8th Ed.} \\
+    W. H. Hayt, J. E. Kemmerly, S. M. Durbin \\
+    Cap\'itulos 7 y 8
+}
+\author{Equipo: Malvados y Asociados}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Introducci\'on}
+% ============================================================
+
+% TODO: Describir el objetivo del proyecto y contexto del curso
+
+\subsection{Objetivo}
+Simular y analizar la respuesta de un circuito RC de primer orden a un tren de pulsos, identificando los cuatro casos caracter\'isticos de la respuesta transitoria para determinar el valor de la constante de tiempo $\tau$.
+
+\subsection{Alcance}
+\begin{enumerate}
+    \item \textbf{Fase 1:} Simulaci\'on en MATLAB --- Modelado matem\'atico y simulaci\'on de los 4 casos.
+    \item \textbf{Fase 2:} Realizaci\'on f\'isica --- Implementaci\'on con instrumentaci\'on electr\'onica.
+\end{enumerate}
+
+% ============================================================
+\section{Marco Te\'orico}
+% ============================================================
+
+\subsection{Circuito RC de Primer Orden}
+
+% TODO: Completar con base en el libro (Cap. 7-8)
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american]
+        \draw (0,0) to[V, v=$v_s(t)$] (0,3)
+                    to[R, l=$R$] (4,3)
+                    to[C, l=$C$, v=$v_c(t)$] (4,0)
+                    -- (0,0);
+    \end{circuitikz}
+    \caption{Circuito RC serie de primer orden.}
+    \label{fig:circuito_rc}
+\end{figure}
+
+\subsection{Ecuaci\'on Diferencial}
+
+La ecuaci\'on diferencial que describe el voltaje en el capacitor es:
+
+\begin{equation}
+    RC \frac{dv_c(t)}{dt} + v_c(t) = v_s(t)
+    \label{eq:edo_rc}
+\end{equation}
+
+donde $\tau = RC$ es la constante de tiempo del circuito.
+
+\subsection{Soluci\'on General}
+
+La soluci\'on a la ecuaci\'on diferencial es:
+
+\begin{equation}
+    v_c(t) = V_f + (V_i - V_f) e^{-t/\tau}
+    \label{eq:solucion_general}
+\end{equation}
+
+donde:
+\begin{itemize}
+    \item $V_i$ = voltaje inicial del capacitor
+    \item $V_f$ = voltaje final (estado estable)
+    \item $\tau = RC$ = constante de tiempo
+\end{itemize}
+
+\subsection{Respuesta a Tren de Pulsos: Los 4 Casos}
+
+% TODO: Documentar los 4 casos basados en el libro
+
+% Caso 1:
+% Caso 2:
+% Caso 3:
+% Caso 4:
+
+% ============================================================
+\section{Fase 1: Simulaci\'on en MATLAB}
+% ============================================================
+
+\subsection{Metodolog\'ia}
+
+% TODO: Describir el enfoque de simulaci\'on
+
+\subsection{C\'odigo y Resultados}
+
+% TODO: Incluir scripts y gr\'aficas
+
+% \lstinputlisting[style=matlab, caption={Script principal}]{../../scripts/rc_simulation.m}
+
+\subsection{An\'alisis de Resultados}
+
+% TODO: Interpretar los 4 casos
+
+% ============================================================
+\section{Fase 2: Realizaci\'on F\'isica}
+% ============================================================
+
+% TODO: Segunda fase del proyecto
+
+\subsection{Dise\~no del Circuito}
+
+\subsection{Instrumentaci\'on}
+
+\subsection{Mediciones y Resultados}
+
+\subsection{Comparaci\'on Simulaci\'on vs. Experimental}
+
+% ============================================================
+\section{Conclusiones}
+% ============================================================
+
+% TODO: Conclusiones finales
+
+% ============================================================
+\section{Problemas Resueltos}
+% ============================================================
+
+% TODO: Problemas de final de cap\'itulo 7 y 8
+
+% ============================================================
+\appendix
+\section{C\'odigo MATLAB Completo}
+% ============================================================
+
+% TODO: Anexar scripts completos
+
+\end{document}
