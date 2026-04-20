@@ -58,86 +58,186 @@
 \section{Introducci\'on}
 % ============================================================
 
-% TODO: Describir el objetivo del proyecto y contexto del curso
-
 \subsection{Objetivo}
 Simular y analizar la respuesta de un circuito RC de primer orden a un tren de pulsos, identificando los cuatro casos caracter\'isticos de la respuesta transitoria para determinar el valor de la constante de tiempo $\tau$.
 
 \subsection{Alcance}
 \begin{enumerate}
-    \item \textbf{Fase 1:} Simulaci\'on en MATLAB --- Modelado matem\'atico y simulaci\'on de los 4 casos.
-    \item \textbf{Fase 2:} Realizaci\'on f\'isica --- Implementaci\'on con instrumentaci\'on electr\'onica.
+    \item \textbf{Fase 1:} Simulaci\'on en MATLAB --- Modelado matem\'atico y simulaci\'on de los 4 casos de respuesta a tren de pulsos.
+    \item \textbf{Fase 2:} Realizaci\'on f\'isica --- Implementaci\'on del circuito con instrumentaci\'on electr\'onica y comparaci\'on con la simulaci\'on.
 \end{enumerate}
 
 % ============================================================
 \section{Marco Te\'orico}
 % ============================================================
 
-\subsection{Circuito RC de Primer Orden}
+\subsection{?`Qu\'e es un circuito RC de primer orden?}
 
-% TODO: Completar con base en el libro (Cap. 7-8)
+Un circuito RC es un circuito el\'ectrico compuesto por una resistencia ($R$) y un capacitor ($C$). Se denomina \textit{de primer orden} porque su comportamiento se describe mediante una ecuaci\'on diferencial ordinaria de primer orden.
+
+El capacitor almacena energ\'ia en forma de campo el\'ectrico, mientras que la resistencia disipa energ\'ia en forma de calor. La interacci\'on entre ambos elementos define la din\'amica transitoria del circuito: el capacitor se carga y descarga a trav\'es de la resistencia con una rapidez determinada por la \textbf{constante de tiempo} $\tau = RC$.
 
 \begin{figure}[H]
     \centering
-    \begin{circuitikz}[american]
+    \begin{circuitikz}[american, scale=1.2]
         \draw (0,0) to[V, v=$v_s(t)$] (0,3)
-                    to[R, l=$R$] (4,3)
-                    to[C, l=$C$, v=$v_c(t)$] (4,0)
+                    to[R, l=$R$, i=$i(t)$] (4,3)
+                    to[C, l=$C$, v=$v_C(t)$] (4,0)
                     -- (0,0);
     \end{circuitikz}
-    \caption{Circuito RC serie de primer orden.}
+    \caption{Circuito RC serie de primer orden. La fuente $v_s(t)$ alimenta al circuito, la corriente $i(t)$ fluye a trav\'es de $R$ y carga el capacitor $C$.}
     \label{fig:circuito_rc}
 \end{figure}
 
-\subsection{Ecuaci\'on Diferencial}
+\subsection{Ecuaci\'on Diferencial del Circuito}
 
-La ecuaci\'on diferencial que describe el voltaje en el capacitor es:
+Aplicando la Ley de Voltajes de Kirchhoff (KVL) al circuito de la Figura~\ref{fig:circuito_rc}:
 
 \begin{equation}
-    RC \frac{dv_c(t)}{dt} + v_c(t) = v_s(t)
+    v_s(t) = v_R(t) + v_C(t) = Ri(t) + v_C(t)
+\end{equation}
+
+Dado que la corriente en el capacitor es $i(t) = C \dfrac{dv_C}{dt}$, sustituyendo:
+
+\begin{equation}
+    RC \frac{dv_C(t)}{dt} + v_C(t) = v_s(t)
     \label{eq:edo_rc}
 \end{equation}
 
-donde $\tau = RC$ es la constante de tiempo del circuito.
+Esta es la ecuaci\'on diferencial de primer orden que gobierna el circuito. La constante de tiempo es:
+
+\begin{equation}
+    \boxed{\tau = RC}
+    \label{eq:tau}
+\end{equation}
 
 \subsection{Soluci\'on General}
 
-La soluci\'on a la ecuaci\'on diferencial es:
+La soluci\'on de la Ec.~(\ref{eq:edo_rc}) se compone de dos partes (Hayt, Sec.~8.7):
+
+\begin{itemize}
+    \item \textbf{Respuesta natural} (transitoria): Depende de la estructura del circuito. Tiene la forma $Ae^{-t/\tau}$ y se extingue conforme $t \to \infty$.
+    \item \textbf{Respuesta forzada} (estado estable): Depende de la fuente. Para una fuente DC, es simplemente el valor final $V_f$.
+\end{itemize}
+
+La respuesta completa es:
 
 \begin{equation}
-    v_c(t) = V_f + (V_i - V_f) e^{-t/\tau}
+    \boxed{v_C(t) = V_f + (V_i - V_f)\, e^{-t/\tau}}
     \label{eq:solucion_general}
 \end{equation}
 
-donde:
-\begin{itemize}
-    \item $V_i$ = voltaje inicial del capacitor
-    \item $V_f$ = voltaje final (estado estable)
-    \item $\tau = RC$ = constante de tiempo
-\end{itemize}
+donde $V_i = v_C(0)$ es el voltaje inicial y $V_f$ es el voltaje en estado estable.
+
+\subsection{Carga y Descarga del Capacitor}
+
+\subsubsection{Carga ($V_i = 0$, $V_f = V$)}
+
+Cuando el capacitor est\'a inicialmente descargado y se conecta a una fuente DC de voltaje $V$:
+
+\begin{equation}
+    v_C(t) = V\left(1 - e^{-t/\tau}\right)
+    \label{eq:carga}
+\end{equation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{fig_carga.png}
+    \caption{Respuesta de carga del capacitor. En $t = \tau$, el voltaje alcanza el 63.2\% del valor final. En $t = 5\tau$, ha alcanzado el 99.3\%.}
+    \label{fig:carga}
+\end{figure}
+
+\subsubsection{Descarga ($V_i = V$, $V_f = 0$)}
+
+Cuando la fuente se desconecta y el capacitor se descarga a trav\'es de $R$ (circuito \textit{source-free}, Hayt Sec.~8.3):
+
+\begin{equation}
+    v_C(t) = V\, e^{-t/\tau}
+    \label{eq:descarga}
+\end{equation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{fig_descarga.png}
+    \caption{Respuesta de descarga del capacitor. En $t = \tau$, el voltaje ha ca\'ido al 36.8\% de su valor inicial. En $t = 5\tau$, es pr\'acticamente cero (0.7\%).}
+    \label{fig:descarga}
+\end{figure}
+
+\subsubsection{Significado de la constante de tiempo $\tau$}
+
+La constante de tiempo $\tau = RC$ tiene un significado f\'isico preciso (Hayt, Sec.~8.2):
+
+\begin{table}[H]
+    \centering
+    \caption{Porcentaje de carga/descarga en m\'ultiplos de $\tau$.}
+    \label{tab:tau_valores}
+    \begin{tabular}{ccc}
+        \toprule
+        Tiempo & Carga (\% de $V$) & Descarga (\% de $V$) \\
+        \midrule
+        $1\tau$ & 63.2\% & 36.8\% \\
+        $2\tau$ & 86.5\% & 13.5\% \\
+        $3\tau$ & 95.0\% & 5.0\% \\
+        $4\tau$ & 98.2\% & 1.8\% \\
+        $5\tau$ & 99.3\% & 0.7\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Se considera que el transitorio ha terminado despu\'es de aproximadamente $5\tau$ (Hayt, Sec.~8.2, p.~270).
 
 \subsection{Respuesta a Tren de Pulsos: Los 4 Casos}
 
-% TODO: Documentar los 4 casos basados en el libro
+Cuando el circuito RC se excita con un tren de pulsos rectangulares (Hayt, Sec.~8.9), la respuesta depende de la relaci\'on entre la constante de tiempo $\tau$, el ancho de pulso $W_p$ y el periodo $T$. La Tabla~8.1 del libro define cuatro casos:
 
-% Caso 1:
-% Caso 2:
-% Caso 3:
-% Caso 4:
+\begin{table}[H]
+    \centering
+    \caption{Cuatro casos de respuesta a tren de pulsos (Hayt, Table 8.1). Con $\tau = 1$ ms.}
+    \label{tab:4casos}
+    \begin{tabular}{clll}
+        \toprule
+        Caso & Ancho $W_p$ & Periodo $T$ & Comportamiento \\
+        \midrule
+        I   & 10 ms ($\tau \ll W_p$) & 20 ms ($\tau \ll T - W_p$) & Carga y descarga completa \\
+        II  & 10 ms ($\tau \ll W_p$) & 10.1 ms ($\tau \gg T - W_p$) & Carga completa, descarga incompleta \\
+        III & 0.1 ms ($\tau \gg W_p$) & 10.1 ms ($\tau \ll T - W_p$) & Carga incompleta, descarga completa \\
+        IV  & 0.1 ms ($\tau \gg W_p$) & 0.2 ms ($\tau \gg T - W_p$) & Ni carga ni descarga completa \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% TODO: Agregar figuras de los 4 casos cuando se simulen
 
 % ============================================================
 \section{Fase 1: Simulaci\'on en MATLAB}
 % ============================================================
 
-\subsection{Metodolog\'ia}
+\subsection{Par\'ametros de Simulaci\'on}
 
-% TODO: Describir el enfoque de simulaci\'on
+Se utilizan los mismos valores que en la Secci\'on 8.9 del libro de referencia:
 
-\subsection{C\'odigo y Resultados}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ll}
+        \toprule
+        Par\'ametro & Valor \\
+        \midrule
+        $R$ & 1 k$\Omega$ \\
+        $C$ & 1 $\mu$F \\
+        $\tau = RC$ & 1 ms \\
+        $V$ (amplitud del pulso) & 9 V \\
+        \bottomrule
+    \end{tabular}
+    \caption{Par\'ametros del circuito RC simulado.}
+\end{table}
 
-% TODO: Incluir scripts y gr\'aficas
+\subsection{Respuesta B\'asica: Carga y Descarga}
 
-% \lstinputlisting[style=matlab, caption={Script principal}]{../../scripts/rc_simulation.m}
+Las Figuras~\ref{fig:carga} y~\ref{fig:descarga} muestran la respuesta b\'asica del circuito RC obtenida en MATLAB utilizando la soluci\'on anal\'itica de las Ecs.~(\ref{eq:carga}) y~(\ref{eq:descarga}). Los puntos marcados en cada m\'ultiplo de $\tau$ confirman los valores te\'oricos de la Tabla~\ref{tab:tau_valores}.
+
+\subsection{Los 4 Casos de Respuesta a Tren de Pulsos}
+
+% TODO: Agregar resultados de simulaci\'on de los 4 casos
 
 \subsection{An\'alisis de Resultados}
 
