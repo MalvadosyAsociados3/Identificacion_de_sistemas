@@ -447,15 +447,183 @@ Para la identificaci\'on de sistemas, el Caso~IV es especialmente \'util: si se 
 \section{Fase 2: Realizaci\'on F\'isica}
 % ============================================================
 
-% TODO: Segunda fase del proyecto
+En esta fase se implementa f\'isicamente el circuito RC simulado en la Fase~1. El tren de pulsos se genera con un microcontrolador ESP32, y la respuesta del capacitor se mide con un osciloscopio.
 
-\subsection{Dise\~no del Circuito}
+\subsection{Materiales}
 
-\subsection{Instrumentaci\'on}
+\begin{table}[H]
+    \centering
+    \caption{Lista de materiales para la implementaci\'on f\'isica.}
+    \begin{tabular}{lll}
+        \toprule
+        Componente & Especificaci\'on & Cantidad \\
+        \midrule
+        ESP32 DevKit V1 & Cualquier variante (WROOM, WROVER) & 1 \\
+        Resistencia & 1 k$\Omega$ ($\pm$5\%, 1/4 W) & 1 \\
+        Capacitor ceram.\ o electrol. & 1 $\mu$F (16V o mayor) & 1 \\
+        Protoboard & 830 puntos & 1 \\
+        Cables jumper M-M & --- & 5--8 \\
+        Cable USB & Micro-USB o USB-C (seg\'un ESP32) & 1 \\
+        Osciloscopio & 2 canales, $\geq$20 MHz & 1 \\
+        Puntas de osciloscopio & x1 / x10 & 2 \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:materiales}
+\end{table}
+
+\textbf{Nota:} Se utiliza $R = 1$ k$\Omega$ y $C = 1$ $\mu$F para obtener $\tau = RC = 1$ ms, consistente con la simulaci\'on.
+
+\subsection{Generaci\'on del Tren de Pulsos con ESP32}
+
+El ESP32 genera una se\~nal digital (0~V / 3.3~V) en un pin GPIO configurado como salida. Para reproducir los 4 casos de la Tabla~\ref{tab:4casos}, se programa el ESP32 para alternar el pin entre HIGH y LOW con los tiempos $W_p$ y $T - W_p$ correspondientes.
+
+\subsubsection{Esquema de conexi\'on}
+
+\begin{figure}[H]
+    \centering
+    \begin{circuitikz}[american, scale=1.0]
+        % ESP32 como bloque
+        \draw (0,0) rectangle (2,3);
+        \node at (1,1.5) {\textbf{ESP32}};
+        \node[right] at (2,2.2) {\footnotesize GPIO\_X};
+        \node[right] at (2,0.8) {\footnotesize GND};
+        % Circuito RC
+        \draw (3.2,2.2) to[R, l=$R$, l_=$1\,\text{k}\Omega$] (6,2.2)
+                        to[C, l=$C$, l_=$1\,\mu\text{F}$, v=$v_C$] (6,0.8)
+                        -- (3.2,0.8);
+        % Conexiones al ESP32
+        \draw (2,2.2) -- (3.2,2.2);
+        \draw (2,0.8) -- (3.2,0.8);
+        % Puntos de medicion
+        \draw[dashed, red!70!black] (6,2.2) -- (7.5,2.2) node[right]{\footnotesize CH1 (osc.)};
+        \draw[dashed, red!70!black] (6,0.8) -- (7.5,0.8) node[right]{\footnotesize GND (osc.)};
+        \draw[dashed, blue!70!black] (3.2,2.2) -- (3.2,3.5) -- (7.5,3.5) node[right]{\footnotesize CH2 (osc.)};
+    \end{circuitikz}
+    \caption{Esquema de conexi\'on. CH1 del osciloscopio mide $v_C(t)$ (respuesta), CH2 mide la se\~nal del tren de pulsos (entrada).}
+    \label{fig:conexion_fisica}
+\end{figure}
+
+\subsubsection{Pasos de conexi\'on}
+
+\begin{enumerate}
+    \item Conectar el pin \textbf{GPIO\_X} del ESP32 a un extremo de la resistencia $R$ en la protoboard.
+    \item Conectar el otro extremo de $R$ a un terminal del capacitor $C$.
+    \item Conectar el otro terminal de $C$ al pin \textbf{GND} del ESP32.
+    \item \textbf{CH1 del osciloscopio}: colocar la punta entre $R$ y $C$ (nodo de $v_C$). La referencia (clip cocodrilo) al GND com\'un.
+    \item \textbf{CH2 del osciloscopio}: colocar la punta en el nodo entre GPIO y $R$ (se\~nal de entrada). Referencia al GND com\'un.
+    \item Conectar el ESP32 por USB a la computadora.
+\end{enumerate}
+
+\subsection{C\'odigo del ESP32}
+
+El siguiente c\'odigo en Arduino genera el tren de pulsos. Se cambia \texttt{Wp\_us} y \texttt{T\_us} para cada caso.
+
+\begin{lstlisting}[style=matlab, language=C++, caption={C\'odigo Arduino para el ESP32. Genera tren de pulsos en GPIO.}]
+#define PIN_PULSO 25  // GPIO de salida
+
+// === CASO I ===
+// unsigned long Wp_us = 10000;  // 10 ms
+// unsigned long T_us  = 20000;  // 20 ms
+
+// === CASO II ===
+// unsigned long Wp_us = 10000;  // 10 ms
+// unsigned long T_us  = 10100;  // 10.1 ms
+
+// === CASO III ===
+// unsigned long Wp_us = 100;    // 0.1 ms
+// unsigned long T_us  = 10100;  // 10.1 ms
+
+// === CASO IV ===
+unsigned long Wp_us = 100;      // 0.1 ms
+unsigned long T_us  = 200;      // 0.2 ms
+
+void setup() {
+    pinMode(PIN_PULSO, OUTPUT);
+    digitalWrite(PIN_PULSO, LOW);
+}
+
+void loop() {
+    // Pulso HIGH durante Wp
+    digitalWrite(PIN_PULSO, HIGH);
+    delayMicroseconds(Wp_us);
+
+    // LOW durante (T - Wp)
+    digitalWrite(PIN_PULSO, LOW);
+    delayMicroseconds(T_us - Wp_us);
+}
+\end{lstlisting}
+
+\textbf{Importante:} La amplitud de la se\~nal del ESP32 es 3.3~V (no 9~V como en la simulaci\'on). Esto no afecta la constante de tiempo $\tau$ ni la \textit{forma} de la respuesta, solo la escala de voltaje. La constante de tiempo se identifica de la misma manera.
+
+\subsection{Procedimiento de Medici\'on}
+
+Para cada uno de los 4 casos, seguir estos pasos:
+
+\begin{enumerate}
+    \item \textbf{Programar el ESP32} con los valores de $W_p$ y $T$ correspondientes al caso (descomentar la l\'inea apropiada en el c\'odigo).
+    \item \textbf{Cargar el c\'odigo} al ESP32 con el Arduino IDE.
+    \item \textbf{Configurar el osciloscopio:}
+    \begin{itemize}
+        \item Ajustar la base de tiempo seg\'un el caso:
+        \begin{itemize}
+            \item Casos I y II: $\sim$5 ms/div
+            \item Caso III: $\sim$5 ms/div
+            \item Caso IV: $\sim$1 ms/div (para ver la envolvente)
+        \end{itemize}
+        \item Escala vertical: 1~V/div para ambos canales.
+        \item Trigger: flanco de subida en CH2 (se\~nal de entrada).
+        \item Modo: Normal o Single para capturar la envolvente transitoria (especialmente importante en Caso~IV).
+    \end{itemize}
+    \item \textbf{Observar y capturar} la se\~nal en el osciloscopio. Guardar capturas de pantalla o fotograf\'ias.
+    \item \textbf{Medir $\tau$:}
+    \begin{itemize}
+        \item \textbf{Caso I} (m\'etodo directo): Con los cursores del osciloscopio, medir el tiempo desde el inicio de la carga ($v_C = 0$) hasta que $v_C$ alcance el 63.2\% de 3.3~V ($\approx 2.09$~V). Ese tiempo es $\tau$.
+        \item \textbf{Caso IV} (m\'etodo de envolvente): Medir el tiempo que tarda la envolvente en alcanzar el 63.2\% de su valor final ($\approx 0.632 \times 1.65 = 1.04$~V). Ese tiempo tambi\'en es $\tau$.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Qu\'e Esperar en Cada Caso}
+
+\begin{table}[H]
+    \centering
+    \caption{Valores esperados con $V = 3.3$ V (ESP32) y $\tau = 1$ ms.}
+    \begin{tabular}{clcc}
+        \toprule
+        Caso & Comportamiento esperado & $v_{C,\text{max}}$ & $v_{C,\text{min}}$ \\
+        \midrule
+        I   & Exponenciales completas, cada periodo independiente & $\approx 3.3$ V & $\approx 0$ V \\
+        II  & Voltaje m\'inimo sube r\'apidamente hacia 3.3 V & $\approx 3.3$ V & $\to 3.3$ V \\
+        III & Picos peque\~nos ($\sim$0.31 V), descarga completa & $\approx 0.31$ V & $\approx 0$ V \\
+        IV  & Rampa con micro-oscilaciones hacia $\sim$1.65 V & $\to 1.65$ V & $\to 1.65$ V \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:esperados_fisico}
+\end{table}
 
 \subsection{Mediciones y Resultados}
 
+% TODO: Insertar capturas del osciloscopio para cada caso
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.9\textwidth]{fig_osc_caso1.png}
+%     \caption{Caso I medido en osciloscopio. CH1: $v_C(t)$, CH2: tren de pulsos.}
+% \end{figure}
+
 \subsection{Comparaci\'on Simulaci\'on vs. Experimental}
+
+% TODO: Tabla comparativa de tau medido vs tau teorico
+% \begin{table}[H]
+%     \centering
+%     \caption{Comparaci\'on de $\tau$ te\'orico vs. medido.}
+%     \begin{tabular}{cccc}
+%         \toprule
+%         Caso & $\tau_{\text{te\'orico}}$ & $\tau_{\text{medido}}$ & Error \\
+%         \midrule
+%         I   & 1 ms & --- & --- \\
+%         IV  & 1 ms & --- & --- \\
+%         \bottomrule
+%     \end{tabular}
+% \end{table}
 
 % ============================================================
 \section{Conclusiones}
