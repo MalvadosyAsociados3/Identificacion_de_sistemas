@@ -212,7 +212,14 @@ Cuando el circuito RC se excita con un tren de pulsos rectangulares (Hayt, Sec.~
 
 \subsection{Par\'ametros de Simulaci\'on}
 
-Se utilizan los mismos valores que en la Secci\'on 8.9 del libro de referencia:
+Se utilizan los mismos valores que en la Secci\'on 8.9 del libro de referencia. En MATLAB, los par\'ametros se definen directamente con sus unidades del SI:
+
+\begin{lstlisting}[style=matlab, caption={Definici\'on de par\'ametros del circuito.}]
+R   = 1e3;          % 1 kOhm
+C   = 1e-6;         % 1 uF
+tau = R * C;         % 1 ms
+V   = 9;             % 9 V
+\end{lstlisting}
 
 \begin{table}[H]
     \centering
@@ -231,13 +238,45 @@ Se utilizan los mismos valores que en la Secci\'on 8.9 del libro de referencia:
 
 \subsection{Respuesta B\'asica: Carga y Descarga}
 
-Las Figuras~\ref{fig:carga} y~\ref{fig:descarga} muestran la respuesta b\'asica del circuito RC obtenida en MATLAB utilizando la soluci\'on anal\'itica de las Ecs.~(\ref{eq:carga}) y~(\ref{eq:descarga}). Los puntos marcados en cada m\'ultiplo de $\tau$ confirman los valores te\'oricos de la Tabla~\ref{tab:tau_valores}.
+Para generar las curvas de carga y descarga, traducimos directamente las Ecs.~(\ref{eq:carga}) y~(\ref{eq:descarga}) a MATLAB. Se generan 5000 puntos en el intervalo $[0, 5\tau]$ para obtener curvas suaves:
 
-La simulaci\'on se realiz\'o por tramos: en cada intervalo del tren de pulsos, el voltaje final del tramo anterior se toma como condici\'on inicial del siguiente, aplicando la Ec.~(\ref{eq:solucion_general}).
+\begin{lstlisting}[style=matlab, caption={Traducci\'on de las ecuaciones de carga y descarga a c\'odigo.}]
+t = linspace(0, 5*tau, 5000);
+v_carga    = V * (1 - exp(-t/tau));    % Ec. (5): Vi=0, Vf=V
+v_descarga = V * exp(-t/tau);          % Ec. (6): Vi=V, Vf=0
+\end{lstlisting}
+
+N\'otese la correspondencia directa entre la matem\'atica y el c\'odigo:
+\begin{itemize}
+    \item La Ec.~(\ref{eq:carga}): $v_C(t) = V(1 - e^{-t/\tau})$ se traduce a \texttt{V * (1 - exp(-t/tau))}
+    \item La Ec.~(\ref{eq:descarga}): $v_C(t) = Ve^{-t/\tau}$ se traduce a \texttt{V * exp(-t/tau)}
+\end{itemize}
+
+Los puntos marcados en cada m\'ultiplo de $\tau$ se calculan con un ciclo que eval\'ua la expresi\'on en $t = k\tau$ para $k = 1, 2, \ldots, 5$, confirmando los valores te\'oricos de la Tabla~\ref{tab:tau_valores}.
 
 \subsection{Los 4 Casos de Respuesta a Tren de Pulsos}
 
-A continuaci\'on se presentan los resultados de la simulaci\'on para cada uno de los cuatro casos definidos en la Tabla~\ref{tab:4casos}. En todas las gr\'aficas, la l\'inea roja representa el tren de pulsos $v_s(t)$ y la l\'inea azul la respuesta del capacitor $v_C(t)$.
+Para simular la respuesta a un tren de pulsos, no podemos evaluar una sola expresi\'on en todo el dominio de tiempo. En su lugar, construimos la respuesta \textbf{por tramos}: en cada intervalo (carga o descarga), aplicamos la Ec.~(\ref{eq:solucion_general}) usando como condici\'on inicial $V_i$ el voltaje al final del tramo anterior.
+
+\begin{lstlisting}[style=matlab, caption={Construcci\'on de la respuesta por tramos. Cada periodo tiene un tramo de carga y uno de descarga.}]
+V0 = 0;  % capacitor inicia descargado
+for n = 0:N-1
+    % Tramo de carga: fuente encendida [nT, nT + Wp]
+    tc  = linspace(0, Wp, 500);
+    vcc = V + (V0 - V) * exp(-tc / tau);   % Ec. (4): Vf=V, Vi=V0
+
+    % Tramo de descarga: fuente apagada [nT + Wp, (n+1)T]
+    V1  = vcc(end);                         % condicion inicial = final del tramo anterior
+    td  = linspace(0, T - Wp, 500);
+    vcd = V1 * exp(-td / tau);             % Ec. (6): Vf=0, Vi=V1
+
+    V0 = vcd(end);                          % condicion inicial para el siguiente periodo
+end
+\end{lstlisting}
+
+La l\'inea clave es \texttt{V0 = vcd(end)}: el voltaje al final de la descarga se convierte en la condici\'on inicial del siguiente periodo. Esto es lo que conecta un ciclo con el siguiente y permite observar efectos acumulativos en los Casos II y IV.
+
+A continuaci\'on se presentan los resultados para cada uno de los cuatro casos definidos en la Tabla~\ref{tab:4casos}. En todas las gr\'aficas, la l\'inea roja representa el tren de pulsos $v_s(t)$ y la l\'inea azul la respuesta del capacitor $v_C(t)$.
 
 \subsubsection{Caso I: Carga y descarga completa}
 
@@ -327,6 +366,122 @@ Este \'ultimo caso es particularmente relevante para la identificaci\'on de sist
 \section{C\'odigo MATLAB Completo}
 % ============================================================
 
-% TODO: Anexar scripts completos
+A continuaci\'on se presenta el c\'odigo completo utilizado para generar todas las figuras de este reporte. Se ejecuta en MATLAB R2025b. La opci\'on \texttt{LineJoin, chamfer} es un \textit{workaround} para un bug de renderizado en Linux.
+
+\begin{lstlisting}[style=matlab, caption={C\'odigo completo de simulaci\'on del circuito RC.}]
+clear; clc; close all;
+
+%% Parametros del circuito (Hayt Sec 8.9)
+R   = 1e3;
+C   = 1e-6;
+tau = R * C;
+V   = 9;
+
+%% Colores formales
+azul = [0.0 0.2 0.5];
+rojo = [0.7 0.0 0.0];
+gris = [0.4 0.4 0.4];
+
+%% Respuesta basica: carga y descarga
+t = linspace(0, 5*tau, 5000);
+v_carga    = V * (1 - exp(-t/tau));
+v_descarga = V * exp(-t/tau);
+
+% --- Carga ---
+fig1 = figure('Color','w', 'Position', [100 100 700 400]);
+plot(t*1e3, v_carga, '-', 'Color', azul, ...
+    'LineWidth', 2, 'LineJoin', 'chamfer')
+hold on
+yline(V, '--', 'Color', rojo, 'LineWidth', 1);
+xline(tau*1e3, '--', 'Color', gris, 'LineWidth', 1);
+for k = 1:5
+    val = V * (1 - exp(-k));
+    plot(k*tau*1e3, val, 'o', 'Color', azul, ...
+        'MarkerSize', 6, 'MarkerFaceColor', azul)
+    text(k*tau*1e3 + 0.08, val - 0.5, ...
+        sprintf('%.1f%%', val/V*100), ...
+        'FontSize', 9, 'Color', gris)
+end
+xlabel('Tiempo [ms]', 'FontSize', 12)
+ylabel('v_C(t) [V]', 'FontSize', 12)
+title('Carga: v_C(t) = V(1 - e^{-t/\tau})', 'FontSize', 13)
+grid on; set(gca, 'FontSize', 11)
+
+% --- Descarga ---
+fig2 = figure('Color','w', 'Position', [100 100 700 400]);
+plot(t*1e3, v_descarga, '-', 'Color', azul, ...
+    'LineWidth', 2, 'LineJoin', 'chamfer')
+hold on
+yline(0, '--', 'Color', rojo, 'LineWidth', 1);
+xline(tau*1e3, '--', 'Color', gris, 'LineWidth', 1);
+for k = 1:5
+    val = V * exp(-k);
+    plot(k*tau*1e3, val, 'o', 'Color', azul, ...
+        'MarkerSize', 6, 'MarkerFaceColor', azul)
+    text(k*tau*1e3 + 0.08, val + 0.3, ...
+        sprintf('%.1f%%', val/V*100), ...
+        'FontSize', 9, 'Color', gris)
+end
+xlabel('Tiempo [ms]', 'FontSize', 12)
+ylabel('v_C(t) [V]', 'FontSize', 12)
+title('Descarga: v_C(t) = Ve^{-t/\tau}', 'FontSize', 13)
+grid on; set(gca, 'FontSize', 11)
+
+%% 4 Casos - Tren de pulsos (Hayt Table 8.1)
+casos = struct( ...
+    'Wp', {10e-3, 10e-3, 0.1e-3, 0.1e-3}, ...
+    'T',  {20e-3, 10.1e-3, 10.1e-3, 0.2e-3}, ...
+    'nombre', { ...
+        'Caso I:  W_p=10ms, T=20ms', ...
+        'Caso II:  W_p=10ms, T=10.1ms', ...
+        'Caso III:  W_p=0.1ms, T=10.1ms', ...
+        'Caso IV:  W_p=0.1ms, T=0.2ms'}, ...
+    'desc', { ...
+        'Carga y descarga completa', ...
+        'Carga completa, descarga incompleta', ...
+        'Carga incompleta, descarga completa', ...
+        'Ni carga ni descarga completa'} ...
+);
+
+for i = 1:4
+    Wp = casos(i).Wp;
+    T  = casos(i).T;
+    N  = 5;
+
+    t_vec = []; vc_vec = []; vs_vec = [];
+    V0 = 0;
+
+    for n = 0:N-1
+        tc  = linspace(0, Wp, 500);
+        vcc = V + (V0 - V) * exp(-tc / tau);
+        V1  = vcc(end);
+        td  = linspace(0, T - Wp, 500);
+        vcd = V1 * exp(-td / tau);
+
+        t_vec  = [t_vec,  n*T+tc,        n*T+Wp+td];
+        vc_vec = [vc_vec, vcc,           vcd];
+        vs_vec = [vs_vec, V*ones(size(tc)), ...
+                          zeros(size(td))];
+        V0 = vcd(end);
+    end
+
+    fig = figure('Color','w', ...
+        'Position', [100 100 800 350]);
+    plot(t_vec*1e3, vs_vec, '-', 'Color', rojo, ...
+        'LineWidth', 1.2, 'LineJoin', 'chamfer')
+    hold on
+    plot(t_vec*1e3, vc_vec, '-', 'Color', azul, ...
+        'LineWidth', 2, 'LineJoin', 'chamfer')
+    xlabel('Tiempo [ms]', 'FontSize', 12)
+    ylabel('Voltaje [V]', 'FontSize', 12)
+    title(sprintf('%s - %s', ...
+        casos(i).nombre, casos(i).desc), ...
+        'FontSize', 12)
+    legend('v_s(t)','v_C(t)', ...
+        'Location','best', 'FontSize', 10)
+    grid on; set(gca, 'FontSize', 11)
+    ylim([-0.5 10])
+end
+\end{lstlisting}
 
 \end{document}
