@@ -206,8 +206,6 @@ Cuando el circuito RC se excita con un tren de pulsos rectangulares (Hayt, Sec.~
     \end{tabular}
 \end{table}
 
-% TODO: Agregar figuras de los 4 casos cuando se simulen
-
 % ============================================================
 \section{Fase 1: Simulaci\'on en MATLAB}
 % ============================================================
@@ -235,13 +233,68 @@ Se utilizan los mismos valores que en la Secci\'on 8.9 del libro de referencia:
 
 Las Figuras~\ref{fig:carga} y~\ref{fig:descarga} muestran la respuesta b\'asica del circuito RC obtenida en MATLAB utilizando la soluci\'on anal\'itica de las Ecs.~(\ref{eq:carga}) y~(\ref{eq:descarga}). Los puntos marcados en cada m\'ultiplo de $\tau$ confirman los valores te\'oricos de la Tabla~\ref{tab:tau_valores}.
 
+La simulaci\'on se realiz\'o por tramos: en cada intervalo del tren de pulsos, el voltaje final del tramo anterior se toma como condici\'on inicial del siguiente, aplicando la Ec.~(\ref{eq:solucion_general}).
+
 \subsection{Los 4 Casos de Respuesta a Tren de Pulsos}
 
-% TODO: Agregar resultados de simulaci\'on de los 4 casos
+A continuaci\'on se presentan los resultados de la simulaci\'on para cada uno de los cuatro casos definidos en la Tabla~\ref{tab:4casos}. En todas las gr\'aficas, la l\'inea roja representa el tren de pulsos $v_s(t)$ y la l\'inea azul la respuesta del capacitor $v_C(t)$.
+
+\subsubsection{Caso I: Carga y descarga completa}
+
+Con $W_p = 10$ ms y $T = 20$ ms, tanto el ancho del pulso como el tiempo entre pulsos ($T - W_p = 10$ ms) son mucho mayores que $\tau = 1$ ms. El capacitor tiene tiempo suficiente para cargarse completamente hasta 9 V durante el pulso, y descargarse completamente hasta 0 V antes del siguiente pulso. Cada periodo es independiente del anterior.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{fig_caso1.png}
+    \caption{Caso I: $W_p = 10$ ms, $T = 20$ ms. El capacitor alcanza carga y descarga completa en cada periodo.}
+    \label{fig:caso1}
+\end{figure}
+
+\subsubsection{Caso II: Carga completa, descarga incompleta}
+
+Con $W_p = 10$ ms y $T = 10.1$ ms, el ancho del pulso sigue siendo mucho mayor que $\tau$, pero el tiempo entre pulsos es solo $T - W_p = 0.1$ ms $\ll \tau$. El capacitor se carga completamente, pero no tiene tiempo de descargarse antes de que llegue el siguiente pulso. Despu\'es de los primeros ciclos, el voltaje m\'inimo se estabiliza en un valor cercano a 9 V.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{fig_caso2.png}
+    \caption{Caso II: $W_p = 10$ ms, $T = 10.1$ ms. Carga completa pero descarga incompleta; el voltaje m\'inimo aumenta progresivamente.}
+    \label{fig:caso2}
+\end{figure}
+
+\subsubsection{Caso III: Carga incompleta, descarga completa}
+
+Con $W_p = 0.1$ ms y $T = 10.1$ ms, el pulso dura solo $0.1\tau$, insuficiente para cargar el capacitor. Sin embargo, el tiempo entre pulsos ($T - W_p = 10$ ms $= 10\tau$) permite la descarga completa. El voltaje m\'aximo alcanzado es apenas una fracci\'on de 9 V.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{fig_caso3.png}
+    \caption{Caso III: $W_p = 0.1$ ms, $T = 10.1$ ms. El capacitor apenas se carga pero se descarga completamente.}
+    \label{fig:caso3}
+\end{figure}
+
+\subsubsection{Caso IV: Ni carga ni descarga completa}
+
+Con $W_p = 0.1$ ms y $T = 0.2$ ms, tanto el pulso como el tiempo entre pulsos son mucho menores que $\tau$. El capacitor no puede cargarse ni descargarse en un solo periodo. Sin embargo, a lo largo de m\'ultiples periodos, el voltaje se acumula gradualmente hasta estabilizarse en un valor promedio de $V \cdot W_p / T = 9 \times 0.5 = 4.5$ V (Hayt, Sec.~8.9, p.~305).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{fig_caso4.png}
+    \caption{Caso IV: $W_p = 0.1$ ms, $T = 0.2$ ms. Peque\~nas oscilaciones superpuestas a una envolvente de carga tipo $1 - e^{-t/\tau}$ que converge al valor promedio.}
+    \label{fig:caso4}
+\end{figure}
 
 \subsection{An\'alisis de Resultados}
 
-% TODO: Interpretar los 4 casos
+Los cuatro casos demuestran c\'omo la relaci\'on entre $\tau$, $W_p$ y $T$ determina completamente el comportamiento del circuito:
+
+\begin{itemize}
+    \item Cuando $\tau \ll W_p$ y $\tau \ll (T - W_p)$, el circuito sigue fielmente al tren de pulsos (Caso~I).
+    \item Cuando el tiempo de descarga es insuficiente ($\tau \gg T - W_p$), el voltaje m\'inimo se eleva progresivamente (Caso~II).
+    \item Cuando el tiempo de carga es insuficiente ($\tau \gg W_p$), el voltaje m\'aximo es solo una fracci\'on de $V$ (Caso~III).
+    \item Cuando ambos tiempos son insuficientes, el circuito act\'ua como un filtro promediador, y $v_C$ converge al valor DC promedio del tren de pulsos (Caso~IV).
+\end{itemize}
+
+Este \'ultimo caso es particularmente relevante para la identificaci\'on de sistemas: si se conoce el valor promedio en estado estable y la forma de la envolvente transitoria, es posible estimar $\tau$ a partir de la medici\'on experimental.
 
 % ============================================================
 \section{Fase 2: Realizaci\'on F\'isica}
