@@ -2,7 +2,7 @@
 
 % Paquetes
 \usepackage[utf8]{inputenc}
-\usepackage[spanish]{babel}
+\usepackage{babel}
 \usepackage{amsmath, amssymb}
 \usepackage{graphicx}
 \usepackage{float}
@@ -59,12 +59,12 @@
 % ============================================================
 
 \subsection{Objetivo}
-Simular y analizar la respuesta de un circuito RC de primer orden a un tren de pulsos, identificando los cuatro casos caracter\'isticos de la respuesta transitoria para determinar el valor de la constante de tiempo $\tau$.
+Simular y analizar la respuesta de un circuito RC de primer orden a un tren de pulsos, identificando los cuatro casos caracter\'isticos de la respuesta transitoria descritos en la Secci\'on~8.9 del libro de Hayt, para comprender c\'omo la relaci\'on entre la constante de tiempo $\tau$ y los par\'ametros del tren de pulsos determina el comportamiento del circuito.
 
 \subsection{Alcance}
 \begin{enumerate}
-    \item \textbf{Fase 1:} Simulaci\'on en MATLAB --- Modelado matem\'atico y simulaci\'on de los 4 casos de respuesta a tren de pulsos.
-    \item \textbf{Fase 2:} Realizaci\'on f\'isica --- Implementaci\'on del circuito con instrumentaci\'on electr\'onica y comparaci\'on con la simulaci\'on.
+    \item \textbf{Fase 1:} Simulaci\'on en MATLAB --- Modelado matem\'atico basado en la soluci\'on anal\'itica de la ecuaci\'on diferencial del circuito. Reproducci\'on de la Tabla~8.1 y las Figuras~8.48 y~8.49 del libro.
+    \item \textbf{Fase 2:} Realizaci\'on f\'isica --- Implementaci\'on del circuito con instrumentaci\'on electr\'onica, medici\'on de la respuesta real y comparaci\'on con la simulaci\'on.
 \end{enumerate}
 
 % ============================================================
@@ -73,7 +73,7 @@ Simular y analizar la respuesta de un circuito RC de primer orden a un tren de p
 
 \subsection{?`Qu\'e es un circuito RC de primer orden?}
 
-Un circuito RC es un circuito el\'ectrico compuesto por una resistencia ($R$) y un capacitor ($C$). Se denomina \textit{de primer orden} porque su comportamiento se describe mediante una ecuaci\'on diferencial ordinaria de primer orden.
+Un circuito RC es un circuito el\'ectrico compuesto por una resistencia ($R$) y un capacitor ($C$). Se denomina \textit{de primer orden} porque su comportamiento se describe mediante una ecuaci\'on diferencial ordinaria de primer orden (Hayt, Cap.~8, p.~261).
 
 El capacitor almacena energ\'ia en forma de campo el\'ectrico, mientras que la resistencia disipa energ\'ia en forma de calor. La interacci\'on entre ambos elementos define la din\'amica transitoria del circuito: el capacitor se carga y descarga a trav\'es de la resistencia con una rapidez determinada por la \textbf{constante de tiempo} $\tau = RC$.
 
@@ -91,85 +91,101 @@ El capacitor almacena energ\'ia en forma de campo el\'ectrico, mientras que la r
 
 \subsection{Ecuaci\'on Diferencial del Circuito}
 
-Aplicando la Ley de Voltajes de Kirchhoff (KVL) al circuito de la Figura~\ref{fig:circuito_rc}:
+Aplicando la Ley de Voltajes de Kirchhoff (KVL) al circuito de la Figura~\ref{fig:circuito_rc}, la suma de las ca\'idas de voltaje en el lazo debe ser cero:
 
 \begin{equation}
     v_s(t) = v_R(t) + v_C(t) = Ri(t) + v_C(t)
 \end{equation}
 
-Dado que la corriente en el capacitor es $i(t) = C \dfrac{dv_C}{dt}$, sustituyendo:
+La relaci\'on entre corriente y voltaje en el capacitor es $i(t) = C \dfrac{dv_C}{dt}$ (Hayt, Sec.~7.1). Sustituyendo:
 
 \begin{equation}
     RC \frac{dv_C(t)}{dt} + v_C(t) = v_s(t)
     \label{eq:edo_rc}
 \end{equation}
 
-Esta es la ecuaci\'on diferencial de primer orden que gobierna el circuito. La constante de tiempo es:
+Esta es una ecuaci\'on diferencial lineal de primer orden con coeficientes constantes. La constante que aparece naturalmente es el producto $RC$, que tiene unidades de tiempo:
 
 \begin{equation}
     \boxed{\tau = RC}
     \label{eq:tau}
 \end{equation}
 
-\subsection{Soluci\'on General}
+\subsection{Soluci\'on General: Respuesta Natural y Forzada}
 
-La soluci\'on de la Ec.~(\ref{eq:edo_rc}) se compone de dos partes (Hayt, Sec.~8.7):
+Siguiendo el m\'etodo descrito en la Secci\'on~8.7 de Hayt, la soluci\'on de la Ec.~(\ref{eq:edo_rc}) se compone de dos partes:
 
 \begin{itemize}
-    \item \textbf{Respuesta natural} (transitoria): Depende de la estructura del circuito. Tiene la forma $Ae^{-t/\tau}$ y se extingue conforme $t \to \infty$.
-    \item \textbf{Respuesta forzada} (estado estable): Depende de la fuente. Para una fuente DC, es simplemente el valor final $V_f$.
+    \item \textbf{Respuesta natural} (o \textit{transitoria}): Es la soluci\'on de la ecuaci\'on homog\'enea ($v_s = 0$). Depende \'unicamente de la estructura del circuito y tiene la forma $Ae^{-t/\tau}$. Esta respuesta se extingue conforme $t \to \infty$, ya que la energ\'ia almacenada en el capacitor se disipa gradualmente en la resistencia.
+    \item \textbf{Respuesta forzada} (o \textit{de estado estable}): Es la soluci\'on particular, determinada por la fuente. Para una fuente DC constante, la respuesta forzada es simplemente el valor final $V_f$ al que tiende el circuito despu\'es de que el transitorio desaparece.
 \end{itemize}
 
-La respuesta completa es:
+La respuesta completa es la suma de ambas (Hayt, Sec.~8.7, Ec.~[33]):
 
 \begin{equation}
-    \boxed{v_C(t) = V_f + (V_i - V_f)\, e^{-t/\tau}}
+    \boxed{f(t) = f(\infty) + [f(0^+) - f(\infty)]\, e^{-t/\tau}}
     \label{eq:solucion_general}
 \end{equation}
 
-donde $V_i = v_C(0)$ es el voltaje inicial y $V_f$ es el voltaje en estado estable.
+En nuestro caso, $f(t) = v_C(t)$, donde $f(0^+) = V_i$ es el voltaje inicial del capacitor y $f(\infty) = V_f$ es el voltaje en estado estable:
+
+\begin{equation}
+    v_C(t) = V_f + (V_i - V_f)\, e^{-t/\tau}
+    \label{eq:solucion_vc}
+\end{equation}
+
+Esta expresi\'on es la herramienta fundamental para toda la simulaci\'on: se aplica en cada intervalo de tiempo, usando como $V_i$ el voltaje al final del intervalo anterior.
 
 \subsection{Carga y Descarga del Capacitor}
 
 \subsubsection{Carga ($V_i = 0$, $V_f = V$)}
 
-Cuando el capacitor est\'a inicialmente descargado y se conecta a una fuente DC de voltaje $V$:
+Cuando el capacitor est\'a inicialmente descargado ($V_i = 0$) y se conecta a una fuente DC de voltaje $V$ ($V_f = V$), la Ec.~(\ref{eq:solucion_vc}) se reduce a:
 
 \begin{equation}
     v_C(t) = V\left(1 - e^{-t/\tau}\right)
     \label{eq:carga}
 \end{equation}
 
+El voltaje parte de cero y crece asint\'oticamente hacia $V$. La rapidez de crecimiento est\'a controlada por $\tau$: un $\tau$ peque\~no (baja resistencia o baja capacitancia) produce una carga r\'apida.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{fig_carga.png}
-    \caption{Respuesta de carga del capacitor. En $t = \tau$, el voltaje alcanza el 63.2\% del valor final. En $t = 5\tau$, ha alcanzado el 99.3\%.}
+    \caption{Respuesta de carga del capacitor simulada en MATLAB. En $t = \tau$ el voltaje alcanza el 63.2\% del valor final; en $t = 5\tau$ ha alcanzado el 99.3\%.}
     \label{fig:carga}
 \end{figure}
 
 \subsubsection{Descarga ($V_i = V$, $V_f = 0$)}
 
-Cuando la fuente se desconecta y el capacitor se descarga a trav\'es de $R$ (circuito \textit{source-free}, Hayt Sec.~8.3):
+Cuando la fuente se desconecta y el capacitor se descarga a trav\'es de $R$ (circuito \textit{source-free}, Hayt Sec.~8.3), la respuesta forzada es cero ($V_f = 0$):
 
 \begin{equation}
     v_C(t) = V\, e^{-t/\tau}
     \label{eq:descarga}
 \end{equation}
 
+El voltaje decae exponencialmente desde su valor inicial $V$ hacia cero. Hayt se\~nala que \textit{``a final voltage of zero is necessary''} (p.~273): toda la energ\'ia almacenada se disipa eventualmente en la resistencia.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{fig_descarga.png}
-    \caption{Respuesta de descarga del capacitor. En $t = \tau$, el voltaje ha ca\'ido al 36.8\% de su valor inicial. En $t = 5\tau$, es pr\'acticamente cero (0.7\%).}
+    \caption{Respuesta de descarga del capacitor simulada en MATLAB. En $t = \tau$ el voltaje ha ca\'ido al 36.8\% de su valor inicial; en $t = 5\tau$ es pr\'acticamente cero (0.7\%).}
     \label{fig:descarga}
 \end{figure}
 
-\subsubsection{Significado de la constante de tiempo $\tau$}
+\subsubsection{Significado f\'isico de la constante de tiempo $\tau$}
 
-La constante de tiempo $\tau = RC$ tiene un significado f\'isico preciso (Hayt, Sec.~8.2):
+La constante de tiempo $\tau = RC$ tiene dos interpretaciones equivalentes (Hayt, Sec.~8.2, p.~269):
+
+\begin{enumerate}
+    \item Es el tiempo que tardar\'ia la respuesta en llegar a cero \textit{si mantuviera su tasa de decaimiento inicial} (intersecci\'on de la tangente en $t=0$ con el eje horizontal).
+    \item En $t = \tau$, la respuesta ha decrecido al $e^{-1} = 36.8\%$ de su valor inicial (o ha crecido al $1 - e^{-1} = 63.2\%$ del valor final en el caso de carga).
+\end{enumerate}
 
 \begin{table}[H]
     \centering
-    \caption{Porcentaje de carga/descarga en m\'ultiplos de $\tau$.}
+    \caption{Porcentaje de carga/descarga en m\'ultiplos de $\tau$ (Hayt, Sec.~8.2, p.~269).}
     \label{tab:tau_valores}
     \begin{tabular}{ccc}
         \toprule
@@ -184,15 +200,36 @@ La constante de tiempo $\tau = RC$ tiene un significado f\'isico preciso (Hayt, 
     \end{tabular}
 \end{table}
 
-Se considera que el transitorio ha terminado despu\'es de aproximadamente $5\tau$ (Hayt, Sec.~8.2, p.~270).
+Como regla pr\'actica, se considera que el transitorio ha terminado despu\'es de aproximadamente $5\tau$, ya que en ese punto la respuesta est\'a dentro del 1\% de su valor final (Hayt, p.~270: \textit{``About five time constants''}).
 
 \subsection{Respuesta a Tren de Pulsos: Los 4 Casos}
 
-Cuando el circuito RC se excita con un tren de pulsos rectangulares (Hayt, Sec.~8.9), la respuesta depende de la relaci\'on entre la constante de tiempo $\tau$, el ancho de pulso $W_p$ y el periodo $T$. La Tabla~8.1 del libro define cuatro casos:
+\subsubsection{El tren de pulsos como entrada}
+
+En la Secci\'on~8.9, Hayt analiza circuitos RC excitados por fuentes de voltaje pulsadas. La Figura~\ref{fig:book_vpulse} muestra el esquema del circuito y los par\'ametros del tren de pulsos: voltajes l\'imite \textbf{V1} y \textbf{V2}, tiempo de subida \textbf{TR}, tiempo de ca\'ida \textbf{TF}, ancho del pulso \textbf{PW} ($= W_p$), y periodo \textbf{PER} ($= T$).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{fig_book_8_47.png}
+    \caption{Circuito RC con fuente de voltaje pulsada y definici\'on de los par\'ametros VPULSE (Hayt, Fig.~8.47).}
+    \label{fig:book_vpulse}
+\end{figure}
+
+Para nuestro an\'alisis: $V1 = 0$, $V2 = 9$ V, $TR = TF \approx 0$ (transiciones instant\'aneas), y $\tau = RC = 1$ ms.
+
+\subsubsection{Los cuatro casos}
+
+La clave del an\'alisis es comparar $\tau$ con dos tiempos:
+\begin{itemize}
+    \item El ancho del pulso $W_p$: ?`tiene el capacitor tiempo de cargarse completamente?
+    \item El tiempo entre pulsos $T - W_p$: ?`tiene el capacitor tiempo de descargarse completamente?
+\end{itemize}
+
+Hayt define cuatro combinaciones en la Tabla~8.1:
 
 \begin{table}[H]
     \centering
-    \caption{Cuatro casos de respuesta a tren de pulsos (Hayt, Table 8.1). Con $\tau = 1$ ms.}
+    \caption{Cuatro casos de respuesta a tren de pulsos (Hayt, Table~8.1). Con $\tau = 1$ ms.}
     \label{tab:4casos}
     \begin{tabular}{clll}
         \toprule
@@ -206,13 +243,29 @@ Cuando el circuito RC se excita con un tren de pulsos rectangulares (Hayt, Sec.~
     \end{tabular}
 \end{table}
 
+La Figura~\ref{fig:book_4casos} muestra los bocetos cualitativos que Hayt presenta para cada caso, y la Figura~\ref{fig:book_pspice} muestra los resultados de simulaci\'on en PSpice del libro.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{fig_book_8_48.png}
+    \caption{Bocetos cualitativos de $v_C(t)$ para los 4 casos (Hayt, Fig.~8.48). (a)~Caso~I, (b)~Caso~II, (c)~Caso~III, (d)~Caso~IV.}
+    \label{fig:book_4casos}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{fig_book_8_49.png}
+    \caption{Resultados de simulaci\'on PSpice para los 4 casos (Hayt, Fig.~8.49). Nuestro objetivo es reproducir estas curvas en MATLAB.}
+    \label{fig:book_pspice}
+\end{figure}
+
 % ============================================================
 \section{Fase 1: Simulaci\'on en MATLAB}
 % ============================================================
 
 \subsection{Par\'ametros de Simulaci\'on}
 
-Se utilizan los mismos valores que en la Secci\'on 8.9 del libro de referencia. En MATLAB, los par\'ametros se definen directamente con sus unidades del SI:
+Se utilizan exactamente los mismos valores que en la Secci\'on~8.9 del libro:
 
 \begin{lstlisting}[style=matlab, caption={Definici\'on de par\'ametros del circuito.}]
 R   = 1e3;          % 1 kOhm
@@ -238,102 +291,157 @@ V   = 9;             % 9 V
 
 \subsection{Respuesta B\'asica: Carga y Descarga}
 
-Para generar las curvas de carga y descarga, traducimos directamente las Ecs.~(\ref{eq:carga}) y~(\ref{eq:descarga}) a MATLAB. Se generan 5000 puntos en el intervalo $[0, 5\tau]$ para obtener curvas suaves:
+Las curvas de carga y descarga se generan traduciendo directamente las Ecs.~(\ref{eq:carga}) y~(\ref{eq:descarga}) a MATLAB:
 
-\begin{lstlisting}[style=matlab, caption={Traducci\'on de las ecuaciones de carga y descarga a c\'odigo.}]
+\begin{lstlisting}[style=matlab, caption={Traducci\'on directa de las ecuaciones a c\'odigo MATLAB.}]
 t = linspace(0, 5*tau, 5000);
 v_carga    = V * (1 - exp(-t/tau));    % Ec. (5): Vi=0, Vf=V
 v_descarga = V * exp(-t/tau);          % Ec. (6): Vi=V, Vf=0
 \end{lstlisting}
 
-N\'otese la correspondencia directa entre la matem\'atica y el c\'odigo:
+La correspondencia ecuaci\'on--c\'odigo es directa:
 \begin{itemize}
-    \item La Ec.~(\ref{eq:carga}): $v_C(t) = V(1 - e^{-t/\tau})$ se traduce a \texttt{V * (1 - exp(-t/tau))}
-    \item La Ec.~(\ref{eq:descarga}): $v_C(t) = Ve^{-t/\tau}$ se traduce a \texttt{V * exp(-t/tau)}
+    \item Ec.~(\ref{eq:carga}): $V(1 - e^{-t/\tau})$ $\longrightarrow$ \texttt{V * (1 - exp(-t/tau))}
+    \item Ec.~(\ref{eq:descarga}): $Ve^{-t/\tau}$ $\longrightarrow$ \texttt{V * exp(-t/tau)}
 \end{itemize}
 
-Los puntos marcados en cada m\'ultiplo de $\tau$ se calculan con un ciclo que eval\'ua la expresi\'on en $t = k\tau$ para $k = 1, 2, \ldots, 5$, confirmando los valores te\'oricos de la Tabla~\ref{tab:tau_valores}.
+Se usan 5000 puntos en el intervalo $[0, 5\tau]$ para obtener curvas suaves. Los puntos marcados en las Figuras~\ref{fig:carga} y~\ref{fig:descarga} confirman los valores te\'oricos de la Tabla~\ref{tab:tau_valores}.
 
-\subsection{Los 4 Casos de Respuesta a Tren de Pulsos}
+\subsection{Simulaci\'on del Tren de Pulsos: M\'etodo por Tramos}
 
-Para simular la respuesta a un tren de pulsos, no podemos evaluar una sola expresi\'on en todo el dominio de tiempo. En su lugar, construimos la respuesta \textbf{por tramos}: en cada intervalo (carga o descarga), aplicamos la Ec.~(\ref{eq:solucion_general}) usando como condici\'on inicial $V_i$ el voltaje al final del tramo anterior.
+Para simular la respuesta a un tren de pulsos, no basta con evaluar una sola expresi\'on en todo el dominio de tiempo. El tren de pulsos alterna entre dos estados (fuente encendida y fuente apagada), y en cada transici\'on cambian las condiciones del circuito.
 
-\begin{lstlisting}[style=matlab, caption={Construcci\'on de la respuesta por tramos. Cada periodo tiene un tramo de carga y uno de descarga.}]
+El m\'etodo consiste en dividir cada periodo $T$ en dos tramos y aplicar la Ec.~(\ref{eq:solucion_vc}) en cada uno:
+
+\begin{enumerate}
+    \item \textbf{Tramo de carga} $[nT, \; nT + W_p]$: La fuente est\'a encendida ($V_f = V$). El voltaje inicial $V_i$ es el voltaje al final del tramo anterior:
+    \begin{equation}
+        v_C(t) = V + (V_0 - V)\, e^{-t'/\tau}, \quad t' = t - nT
+    \end{equation}
+
+    \item \textbf{Tramo de descarga} $[nT + W_p, \; (n+1)T]$: La fuente est\'a apagada ($V_f = 0$). El voltaje inicial es el valor al final del tramo de carga:
+    \begin{equation}
+        v_C(t) = V_1\, e^{-t''/\tau}, \quad t'' = t - (nT + W_p)
+    \end{equation}
+\end{enumerate}
+
+El c\'odigo implementa esto con dos ciclos anidados:
+
+\begin{lstlisting}[style=matlab, caption={Construcci\'on de la respuesta por tramos. La l\'inea 13 es la clave: el voltaje final de la descarga se convierte en la condici\'on inicial del siguiente periodo.}]
 V0 = 0;  % capacitor inicia descargado
 for n = 0:N-1
-    % Tramo de carga: fuente encendida [nT, nT + Wp]
+    % Tramo de carga: fuente encendida durante Wp
     tc  = linspace(0, Wp, 500);
-    vcc = V + (V0 - V) * exp(-tc / tau);   % Ec. (4): Vf=V, Vi=V0
+    vcc = V + (V0 - V) * exp(-tc / tau);
 
-    % Tramo de descarga: fuente apagada [nT + Wp, (n+1)T]
-    V1  = vcc(end);                         % condicion inicial = final del tramo anterior
+    % Tramo de descarga: fuente apagada durante (T - Wp)
+    V1  = vcc(end);   % condicion inicial = final de la carga
     td  = linspace(0, T - Wp, 500);
-    vcd = V1 * exp(-td / tau);             % Ec. (6): Vf=0, Vi=V1
+    vcd = V1 * exp(-td / tau);
 
-    V0 = vcd(end);                          % condicion inicial para el siguiente periodo
+    V0 = vcd(end);    % CLAVE: encadena con el siguiente periodo
 end
 \end{lstlisting}
 
-La l\'inea clave es \texttt{V0 = vcd(end)}: el voltaje al final de la descarga se convierte en la condici\'on inicial del siguiente periodo. Esto es lo que conecta un ciclo con el siguiente y permite observar efectos acumulativos en los Casos II y IV.
+La l\'inea \texttt{V0 = vcd(end)} es el mecanismo que conecta un periodo con el siguiente. Gracias a esto, los efectos acumulativos de los Casos~II y~IV emergen naturalmente: si la descarga no llega a cero, el siguiente periodo de carga inicia desde un voltaje mayor.
 
-A continuaci\'on se presentan los resultados para cada uno de los cuatro casos definidos en la Tabla~\ref{tab:4casos}. En todas las gr\'aficas, la l\'inea roja representa el tren de pulsos $v_s(t)$ y la l\'inea azul la respuesta del capacitor $v_C(t)$.
+\subsection{Diferencias entre los 4 Casos}
 
-\subsubsection{Caso I: Carga y descarga completa}
+La diferencia fundamental entre los cuatro casos radica en dos preguntas:
 
-Con $W_p = 10$ ms y $T = 20$ ms, tanto el ancho del pulso como el tiempo entre pulsos ($T - W_p = 10$ ms) son mucho mayores que $\tau = 1$ ms. El capacitor tiene tiempo suficiente para cargarse completamente hasta 9 V durante el pulso, y descargarse completamente hasta 0 V antes del siguiente pulso. Cada periodo es independiente del anterior.
+\begin{enumerate}
+    \item \textbf{?`$W_p$ es suficiente para cargar?} Se necesitan aproximadamente $5\tau$ para una carga completa. Si $W_p \gg 5\tau$ (Casos~I y~II, $W_p = 10$ ms $= 10\tau$), la carga se completa. Si $W_p \ll \tau$ (Casos~III y~IV, $W_p = 0.1$ ms $= 0.1\tau$), el capacitor apenas comienza a cargarse.
+
+    \item \textbf{?`$T - W_p$ es suficiente para descargar?} Se necesitan $5\tau$ para una descarga completa. Si $T - W_p \gg 5\tau$ (Casos~I y~III), la descarga se completa. Si $T - W_p \ll \tau$ (Casos~II y~IV, $T - W_p = 0.1$ ms $= 0.1\tau$), el capacitor apenas comienza a descargarse.
+\end{enumerate}
+
+\subsection{Resultados: Los 4 Casos}
+
+\subsubsection{Caso I: Carga y descarga completa ($W_p = 10$ ms, $T = 20$ ms)}
+
+Con $W_p = 10\tau$ y $T - W_p = 10\tau$, ambos tiempos son 10 veces la constante de tiempo. El capacitor tiene tiempo de sobra para cargarse completamente hasta 9~V y descargarse completamente hasta 0~V en cada periodo. Esto significa que cada periodo es independiente del anterior: $V_0 \approx 0$ al inicio de cada ciclo.
+
+Comparando con la Fig.~8.49(a) del libro, la forma es id\'entica.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{fig_caso1.png}
-    \caption{Caso I: $W_p = 10$ ms, $T = 20$ ms. El capacitor alcanza carga y descarga completa en cada periodo.}
+    \caption{Caso I simulado en MATLAB: $W_p = 10$ ms, $T = 20$ ms. Carga y descarga completa en cada periodo.}
     \label{fig:caso1}
 \end{figure}
 
-\subsubsection{Caso II: Carga completa, descarga incompleta}
+\subsubsection{Caso II: Carga completa, descarga incompleta ($W_p = 10$ ms, $T = 10.1$ ms)}
 
-Con $W_p = 10$ ms y $T = 10.1$ ms, el ancho del pulso sigue siendo mucho mayor que $\tau$, pero el tiempo entre pulsos es solo $T - W_p = 0.1$ ms $\ll \tau$. El capacitor se carga completamente, pero no tiene tiempo de descargarse antes de que llegue el siguiente pulso. Despu\'es de los primeros ciclos, el voltaje m\'inimo se estabiliza en un valor cercano a 9 V.
+El ancho del pulso sigue siendo $10\tau$, suficiente para carga completa. Pero el tiempo entre pulsos es solo $T - W_p = 0.1$ ms $= 0.1\tau$. En ese tiempo, el capacitor apenas se descarga (la Ec.~(\ref{eq:descarga}) eval\'ua $e^{-0.1} = 0.905$, es decir, solo pierde un 9.5\% del voltaje).
+
+Consecuencia: despu\'es del primer pulso, el voltaje m\'inimo ya no es 0~V sino aproximadamente $9 \times 0.905 = 8.14$~V. En los ciclos siguientes, la carga empieza desde un valor cada vez m\'as alto hasta que el m\'inimo se estabiliza muy cerca de 9~V. El libro lo describe en p.~303.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{fig_caso2.png}
-    \caption{Caso II: $W_p = 10$ ms, $T = 10.1$ ms. Carga completa pero descarga incompleta; el voltaje m\'inimo aumenta progresivamente.}
+    \caption{Caso II simulado en MATLAB: $W_p = 10$ ms, $T = 10.1$ ms. El voltaje m\'inimo se eleva progresivamente porque no hay tiempo para descargarse.}
     \label{fig:caso2}
 \end{figure}
 
-\subsubsection{Caso III: Carga incompleta, descarga completa}
+\subsubsection{Caso III: Carga incompleta, descarga completa ($W_p = 0.1$ ms, $T = 10.1$ ms)}
 
-Con $W_p = 0.1$ ms y $T = 10.1$ ms, el pulso dura solo $0.1\tau$, insuficiente para cargar el capacitor. Sin embargo, el tiempo entre pulsos ($T - W_p = 10$ ms $= 10\tau$) permite la descarga completa. El voltaje m\'aximo alcanzado es apenas una fracci\'on de 9 V.
+Ahora el pulso dura solo $0.1\tau$. Eval\'uando la Ec.~(\ref{eq:carga}) en $t = 0.1\tau$:
+$$v_C(0.1\tau) = 9(1 - e^{-0.1}) = 9 \times 0.0952 = 0.857 \text{ V}$$
+
+El capacitor apenas alcanza un 9.5\% de 9~V. Sin embargo, el tiempo de descarga $T - W_p = 10$~ms $= 10\tau$ es m\'as que suficiente para descargar completamente, por lo que cada periodo inicia desde $V_0 \approx 0$ (Hayt, p.~303).
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{fig_caso3.png}
-    \caption{Caso III: $W_p = 0.1$ ms, $T = 10.1$ ms. El capacitor apenas se carga pero se descarga completamente.}
+    \caption{Caso III simulado en MATLAB: $W_p = 0.1$ ms, $T = 10.1$ ms. Picos peque\~nos que se descargan completamente.}
     \label{fig:caso3}
 \end{figure}
 
-\subsubsection{Caso IV: Ni carga ni descarga completa}
+\subsubsection{Caso IV: Ni carga ni descarga completa ($W_p = 0.1$ ms, $T = 0.2$ ms)}
 
-Con $W_p = 0.1$ ms y $T = 0.2$ ms, tanto el pulso como el tiempo entre pulsos son mucho menores que $\tau$. El capacitor no puede cargarse ni descargarse en un solo periodo. Sin embargo, a lo largo de m\'ultiples periodos, el voltaje se acumula gradualmente hasta estabilizarse en un valor promedio de $V \cdot W_p / T = 9 \times 0.5 = 4.5$ V (Hayt, Sec.~8.9, p.~305).
+Este es el caso m\'as interesante. Con $W_p = 0.1\tau$ y $T - W_p = 0.1\tau$, el capacitor no puede cargarse ni descargarse en un solo periodo. ?`Qu\'e sucede entonces?
+
+En cada periodo, el capacitor gana un poco de voltaje (durante $W_p$) y pierde un poco (durante $T - W_p$), pero gana m\'as de lo que pierde porque la carga se hace hacia 9~V y la descarga hacia 0~V. El resultado es un voltaje que \textit{crece gradualmente} con peque\~nas oscilaciones superpuestas.
+
+Hayt se\~nala (p.~305) que el valor promedio en estado estable es:
+$$\bar{v}_C = V \cdot \frac{W_p}{T} = 9 \times \frac{0.1}{0.2} = 4.5 \text{ V}$$
+
+La envolvente de estas oscilaciones tiene la forma $(1 - e^{-t/\tau})$, tardando aproximadamente $5\tau = 5$~ms en estabilizarse.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{fig_caso4.png}
-    \caption{Caso IV: $W_p = 0.1$ ms, $T = 0.2$ ms. Peque\~nas oscilaciones superpuestas a una envolvente de carga tipo $1 - e^{-t/\tau}$ que converge al valor promedio.}
+    \caption{Caso IV simulado en MATLAB: $W_p = 0.1$ ms, $T = 0.2$ ms. El voltaje se acumula gradualmente con micro-oscilaciones, convergiendo al promedio de 4.5~V.}
     \label{fig:caso4}
 \end{figure}
 
-\subsection{An\'alisis de Resultados}
+\subsection{An\'alisis Comparativo}
 
 Los cuatro casos demuestran c\'omo la relaci\'on entre $\tau$, $W_p$ y $T$ determina completamente el comportamiento del circuito:
 
+\begin{table}[H]
+    \centering
+    \caption{Resumen comparativo de los 4 casos.}
+    \begin{tabular}{ccccc}
+        \toprule
+        Caso & $W_p/\tau$ & $(T-W_p)/\tau$ & $v_{C,\text{max}}$ & $v_{C,\text{min}}$ \\
+        \midrule
+        I   & 10    & 10   & $\approx 9$ V    & $\approx 0$ V \\
+        II  & 10    & 0.1  & $\approx 9$ V    & $\to 9$ V \\
+        III & 0.1   & 10   & $\approx 0.86$ V & $\approx 0$ V \\
+        IV  & 0.1   & 0.1  & $\to 4.5$ V      & $\to 4.5$ V \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
 \begin{itemize}
-    \item Cuando $\tau \ll W_p$ y $\tau \ll (T - W_p)$, el circuito sigue fielmente al tren de pulsos (Caso~I).
-    \item Cuando el tiempo de descarga es insuficiente ($\tau \gg T - W_p$), el voltaje m\'inimo se eleva progresivamente (Caso~II).
-    \item Cuando el tiempo de carga es insuficiente ($\tau \gg W_p$), el voltaje m\'aximo es solo una fracci\'on de $V$ (Caso~III).
-    \item Cuando ambos tiempos son insuficientes, el circuito act\'ua como un filtro promediador, y $v_C$ converge al valor DC promedio del tren de pulsos (Caso~IV).
+    \item \textbf{Caso I}: El circuito ``sigue'' al tren de pulsos. Cada periodo es independiente.
+    \item \textbf{Caso II}: El capacitor act\'ua como un \textit{filtro pasa-bajas} que mantiene el voltaje alto, suavizando las ca\'idas breves.
+    \item \textbf{Caso III}: El capacitor no alcanza a responder al pulso. Solo se observan picos peque\~nos.
+    \item \textbf{Caso IV}: El circuito act\'ua como un \textit{promediador}: $v_C$ converge al valor DC promedio del tren de pulsos. Este es el principio detr\'as de la modulaci\'on por ancho de pulso (PWM).
 \end{itemize}
 
-Este \'ultimo caso es particularmente relevante para la identificaci\'on de sistemas: si se conoce el valor promedio en estado estable y la forma de la envolvente transitoria, es posible estimar $\tau$ a partir de la medici\'on experimental.
+Para la identificaci\'on de sistemas, el Caso~IV es especialmente \'util: si se mide la envolvente transitoria (que tiene forma $1 - e^{-t/\tau}$), se puede estimar $\tau$ directamente de la medici\'on experimental.
 
 % ============================================================
 \section{Fase 2: Realizaci\'on F\'isica}
